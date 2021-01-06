@@ -1,5 +1,20 @@
 import discord 
 import os
+import datetime
+import enum
+from pytz import timezone
+
+#Note this file needs desperate cleanup
+
+class Days(enum.Enum):
+  monday = 0
+  tuesday = 1
+  wednesday = 2
+  thursday = 3
+  friday = 4
+  saturday = 5
+  sunday = 6
+
 
 bot = discord.Client()
 possibleCommands = ["listcoopgames", "addcoopgame", "schedule"]
@@ -46,7 +61,7 @@ async def checkCommand(command, channel, args):
   #Schedule coop game time for reminder
   #Take in people of group/time to alert
   elif(command == "schedule"):
-    scheduleTime()
+    await scheduleTime(channel, args)
 
   elif(command == ""):
     print("...")
@@ -106,7 +121,30 @@ async def addGame(channel, args):
 async def findGames():
   print("Does Nothing")
 
-async def scheduleTime():
-    print("Does nothing")
+#Specify in terms of day (Mon, Tue, etc...), time (and AM/PM), and timezone.
+async def scheduleTime(channel, args):
+
+  #Place user arguments into day, time, am/pm, and timezone.
+    dayOfWeek = args[0]
+    timeOfDay = args[1]
+    amOrPM = args[2]
+    timeZone = args[3]
+    
+    #Find out what day it is, for reference. Make this a separate function when done. Returns dayinTermsofNum for use later to find the day.
+    dayinTermsOfNum = 0
+    for day in Days:
+      if(day.name == dayOfWeek.lower()):
+        dayinTermsOfNum = day.value
+
+    #Separate timeOfDay into hour and minutes
+    actualTime = timeOfDay.split(':')
+    actualHours = int(actualTime[0])
+    actualMinutes = int(actualTime[1])
+
+    #Get the current time, sanity check to see if the asked for time is already there.
+    datetime.now(timezone(timeZone.lower()))
+
+    #TO DO: Add method of making this an awaited task so that we can continue while it keeps checking if the allotted time is reached. It is there that the variables captured in here will used.
+
 
 bot.run(os.getenv('TOKEN'))
