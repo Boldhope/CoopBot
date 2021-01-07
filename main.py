@@ -2,7 +2,8 @@ import discord
 import os
 import datetime
 import enum
-from pytz import timezone
+import asyncio
+import pytz
 
 #Note this file needs desperate cleanup
 
@@ -140,11 +141,32 @@ async def scheduleTime(channel, args):
     actualTime = timeOfDay.split(':')
     actualHours = int(actualTime[0])
     actualMinutes = int(actualTime[1])
-
+    actualTimeZone = timeZone.lower()
     #Get the current time, sanity check to see if the asked for time is already there.
-    datetime.now(timezone(timeZone.lower()))
-
+    #datetime.datetime.now(timezone(actualTimeZone))
     #TO DO: Add method of making this an awaited task so that we can continue while it keeps checking if the allotted time is reached. It is there that the variables captured in here will used.
+    await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone)
 
+#Will occasionally sleep and let other processes take over, while it tries to wait for the designated time. May have problems that should be looked at later.
+async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone):
+  #Grab initial values of the time.
+  #t1 = pytz.timezone(timeZone).localize(datetime.now().time())
+  t1 = datetime.datetime.now(pytz.timezone(timeZone))
+  todayDay = t1.weekday()
+  currentHour = t1.hour
+  currentMinute = t1.minute
+  print("Day :" + str(todayDay) + ", Hour: " + str(currentHour) + ", Min: " + str(currentMinute))
+
+  #loop continuously until we reach the hour and minutes we are looking for.
+  while((todayDay != dayinTermsOfNum) and (currentHour != actualHours) and (currentMinute != actualMinutes)):
+    #Sleep for one second, before checking the current time again.
+    await asyncio.sleep(1)
+    #Grab current time...
+    t1 = datetime.datetime.now(pytz.timezone(timeZone))
+    todayDay = t1.weekday()
+    currentHour = t1.hour
+    currentMinute = t1.min
+    print("hi\n")
+    
 
 bot.run(os.getenv('TOKEN'))
