@@ -1,7 +1,9 @@
 from commandsupport import *
 import discord
 import enum
+import os
 
+#Days Enumeration for scheduler.
 class Days(enum.Enum):
   monday = 0
   tuesday = 1
@@ -10,6 +12,7 @@ class Days(enum.Enum):
   friday = 4
   saturday = 5
   sunday = 6
+
 #Open the games.txt file, and write out the list of coop games available.
 async def listGames(channel):
   f = open("games.txt")
@@ -30,16 +33,8 @@ async def listGames(channel):
 async def addGame(channel, args):
   
   #Declare/Initialize variables for use.
-  buffer = ""
+  buffer = getUserInputtedGameName(args)
   gameList = []
-
-  #Piece together the arguments into one cohesive string
-  for arg in args:
-    buffer += (arg + " ")
-
-  #Open the file and check if it is already in the list
-  buffer = buffer.rstrip()
-
   #Fill out our game list
   f = open("games.txt")
   for line in f:
@@ -58,6 +53,7 @@ async def addGame(channel, args):
   f.close()
   
 #Specify in terms of day (Mon, Tue, etc...), time (and AM/PM), and timezone.
+#TO DO: MAKE IT PART OF TASKS, AS IT IS HARD TO KEEP TRACK OF THEM THE WAY THEY ARE CURRENTLY IMPLEMENTED.
 async def scheduleTime(channel, args):
 
   #Place user arguments into day, time, am/pm, and timezone.
@@ -92,6 +88,40 @@ async def scheduleTime(channel, args):
 def listPossibleCommands():
   print("Does nothing")
 
+#Must be able to prevent removal of a specific game, if there are still scheduler tasks running.
+#Take the following format !removecoopgame <GameName>
+#TO DO: MAKE TASKS OUT OF THE SCHEDULED EVENTS. PASS THEM IN HERE, AND CHECK IF THERE ARE ANY FOR A SPECIFIC GAME AND PREVENT REMOVAL IF THERE IS.
+async def removeGame(channel, args):
+  #Get user input
+  userInput = getUserInputtedGameName(args)
+  removalSuccessful = False
+  #Open the respective files for read and write
+  f = open("games.txt")
+  e = open("temp.txt", "w")
+
+  #Check the games.txt line by line to find the game we want to remove.
+  for line in f:
+    tempstr = line.split('\n')
+    #Output lines that do not correspond to the game we want to remove. Else, remove that line.
+    if(tempstr[0] == userInput):
+      removalSuccessful = True
+    else:
+      e.write(line)
+  #Close the files.
+  f.close()
+  e.close()
+  
+  #Delete the previous file, games.txt, and rename temp.txt to games.txt.
+  os.remove("games.txt")
+  os.rename("temp.txt", "games.txt")
+  
+  if(removalSuccessful):
+    await channel.send("Successfully Removed " + userInput)
+  else:
+    await channel.send("Game does not exist...")
+
+
 #Searches a game store for a list of games. Will only return one page at a time. Needs user input to return more than one page... (not sure how to do this at this time)
+#TO DO: USE STEAM STORE PAGE AND TRACK DOWN GAMES ACCORDING TO THEIR TAGS, LIKE "COOP", "ACTION", ETC.
 async def findGames():
   print("Does Nothing")

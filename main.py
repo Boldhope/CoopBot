@@ -44,12 +44,17 @@ async def checkCommand(command, channel, args):
   elif(command == "addcoopgame"):
     await addGame(channel, args)
 
+  #Remove a coop game from the list. Requires you to have scheduled information removed, if it exists for the game, for it to be removed. TO DO.
+  elif (command == "removecoopgame"):
+    await removeGame(channel, args)
+  
   #Schedule coop game time for reminder
   #Take in people of group/time to alert
   elif(command == "schedule"):
     await scheduleTime(channel, args)
 
-  elif(command == ""):
-    print("...")
+  #Incorrect command was entered. Instruct the user to type !help for more information.
+  else:
+    await channel.send("Incorrect command, try entering !help for a list of commands")
 
 bot.run(os.getenv('TOKEN'))

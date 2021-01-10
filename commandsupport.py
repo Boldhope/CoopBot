@@ -26,4 +26,15 @@ async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone):
     currentMinute = t1.minute
 
     print("Day Today: " + str(todayDay) + ", Hours: " + str(currentHour) + ", Minutes:" + str(currentMinute))
+  
+  #Obtain user input on the game name in a single string.
+def getUserInputtedGameName(args):
+  buffer = ""
+  #Piece together the arguments into one cohesive string
+  for arg in args:
+    buffer += (arg + " ")
+
+  #Open the file and check if it is already in the list
+  buffer = buffer.rstrip()
     
+  return buffer
