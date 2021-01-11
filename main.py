@@ -31,22 +31,23 @@ async def on_message(command):
 
 #Function will check the command to see which one was chosen (only checks simple commands)
 async def checkCommand(command, channel, args):
-  
+  tempFileName = "etc/temp.txt"
+  gamesFile = "etc/games.txt"
   #List all the possible commands we are able toi
   if(command == "help"):
-    listPossibleCommands()
+    await listPossibleCommands()
 
   #List all coop games which are part of the coop game list. Can be added to.
   elif(command == "listcoopgames"):
-    await listGames(channel)
+    await listGames(channel, gamesFile)
 
   #Allow user to add a coop game to the list
   elif(command == "addcoopgame"):
-    await addGame(channel, args)
+    await addGame(channel, args, gamesFile)
 
   #Remove a coop game from the list. Requires you to have scheduled information removed, if it exists for the game, for it to be removed. TO DO.
   elif (command == "removecoopgame"):
-    await removeGame(channel, args)
+    await removeGame(channel, args, gamesFile, tempFileName)
   
   #Schedule coop game time for reminder
   #Take in people of group/time to alert

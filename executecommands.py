@@ -14,8 +14,8 @@ class Days(enum.Enum):
   sunday = 6
 
 #Open the games.txt file, and write out the list of coop games available.
-async def listGames(channel):
-  f = open("games.txt")
+async def listGames(channel, fileName):
+  f = open(fileName)
   #Read each line in f for the game list into a buffer, and write out as one message
   buffer = "The list of games are as follows:\n"
   buffer += "```"
@@ -30,13 +30,13 @@ async def listGames(channel):
 #Then, create a single string for everything in *args
 #Compare the string to what is available in the games.txt.
 #If not part of that list, send updated list and confirmation that said game was added.
-async def addGame(channel, args):
+async def addGame(channel, args, fileName):
   
   #Declare/Initialize variables for use.
   buffer = getUserInputtedGameName(args)
   gameList = []
   #Fill out our game list
-  f = open("games.txt")
+  f = open(fileName)
   for line in f:
     tempstr = line.split('\n')
     gameList.append(tempstr[0])
@@ -46,7 +46,7 @@ async def addGame(channel, args):
   if(buffer in gameList):
     await channel.send("This game is already in the list")
   else:
-    e = open("games.txt", "a")
+    e = open(fileName, "a")
     e.write("\n" + buffer)
     await channel.send(buffer + " has been added to the list.")
     e.close()
@@ -60,6 +60,7 @@ async def scheduleTime(channel, args):
     dayOfWeek = args[0]
     timeOfDay = args[1]
     amOrPM = args[2]
+    #Note there needs to be method that handles the time zone conversion for pytz. It can only handle UTC right now.
     timeZone = args[3]
     
     #Find out what day it is, for reference. Make this a separate function when done. Returns dayinTermsofNum for use later to find the day.
@@ -85,19 +86,19 @@ async def scheduleTime(channel, args):
 
 
 #Print from the help.txt, which is preformatted with information
-def listPossibleCommands():
-  print("Does nothing")
+async def listPossibleCommands():
+  print("Does Nothing")
 
 #Must be able to prevent removal of a specific game, if there are still scheduler tasks running.
 #Take the following format !removecoopgame <GameName>
 #TO DO: MAKE TASKS OUT OF THE SCHEDULED EVENTS. PASS THEM IN HERE, AND CHECK IF THERE ARE ANY FOR A SPECIFIC GAME AND PREVENT REMOVAL IF THERE IS.
-async def removeGame(channel, args):
+async def removeGame(channel, args, fileName, tempfileName):
   #Get user input
   userInput = getUserInputtedGameName(args)
   removalSuccessful = False
   #Open the respective files for read and write
-  f = open("games.txt")
-  e = open("temp.txt", "w")
+  f = open(fileName)
+  e = open(tempfileName, "w")
 
   #Check the games.txt line by line to find the game we want to remove.
   for line in f:
@@ -112,8 +113,8 @@ async def removeGame(channel, args):
   e.close()
   
   #Delete the previous file, games.txt, and rename temp.txt to games.txt.
-  os.remove("games.txt")
-  os.rename("temp.txt", "games.txt")
+  os.remove(fileName)
+  os.rename(tempfileName, fileName)
   
   if(removalSuccessful):
     await channel.send("Successfully Removed " + userInput)

@@ -13,10 +13,11 @@ async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone):
 
   print("Day :" + str(todayDay) + ", Hour: " + str(currentHour) + ", Min: " + str(currentMinute))
 
+  print("Specified Day :" + str(dayinTermsOfNum) + ", Specified Hour: " + str(actualHours) + ", Specified Min: " + str(actualMinutes))
   #loop continuously until we reach the hour and minutes we are looking for.
-  while((todayDay != dayinTermsOfNum) and (currentHour != actualHours) and (currentMinute != actualMinutes)):
+  while((todayDay != dayinTermsOfNum) or (currentHour != actualHours) or (currentMinute != actualMinutes)):
     #Sleep for one second, before checking the current time again.
-    await asyncio.sleep(60)
+    await asyncio.sleep(30)
 
     #Grab current time...
     t1 = datetime.datetime.now(pytz.timezone(timeZone))
@@ -27,6 +28,10 @@ async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone):
 
     print("Day Today: " + str(todayDay) + ", Hours: " + str(currentHour) + ", Minutes:" + str(currentMinute))
   
+  print("Time reached...")
+  #Note TO DO that a specific scheduled time has to be tied to another action, which will alert the users when the task is finished.
+
+
   #Obtain user input on the game name in a single string.
 def getUserInputtedGameName(args):
   buffer = ""
