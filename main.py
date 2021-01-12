@@ -1,7 +1,7 @@
 import discord 
 import os
 from executecommands import *
-
+from monitorProcess import *
 bot = discord.Client()
 possibleCommands = ["listcoopgames", "addcoopgame", "schedule"]
 possibleCommandDescriptions = ["", "", ""]
@@ -52,6 +52,7 @@ async def checkCommand(command, channel, args):
   #Schedule coop game time for reminder
   #Take in people of group/time to alert
   elif(command == "schedule"):
+    test = processMonitor.getInstance()
     await scheduleTime(channel, args)
 
   #Incorrect command was entered. Instruct the user to type !help for more information.
