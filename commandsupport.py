@@ -1,9 +1,12 @@
 import asyncio
 import datetime
 import pytz
+from monitorProcess import *
 
 #Will occasionally sleep and let other processes take over, while it tries to wait for the designated time. May have problems that should be looked at later.
-async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone):
+#Parameters include the time which the process is monitoring for &
+#the scheduleInstance as well as the schedule ID for this particular process.
+async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone, scheduleInstance, scheduleIdentifier):
   #Grab initial values of the time.
   t1 = datetime.datetime.now(pytz.timezone(timeZone))
 
@@ -19,17 +22,22 @@ async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone):
     #Sleep for one second, before checking the current time again.
     await asyncio.sleep(30)
 
-    #Grab current time...
-    t1 = datetime.datetime.now(pytz.timezone(timeZone))
+    #Check if discord user wants to eviscerate the life of the poor schedule ;(
+    deletionIncoming = scheduleInstance.checkAlerts(scheduleIdentifier)
+    if (deletionIncoming != True):
+      #Grab current time...
+      t1 = datetime.datetime.now(pytz.timezone(timeZone))
 
-    todayDay = t1.weekday()
-    currentHour = t1.hour
-    currentMinute = t1.minute
+      todayDay = t1.weekday()
+      currentHour = t1.hour
+      currentMinute = t1.minute
 
-    print("Day Today: " + str(todayDay) + ", Hours: " + str(currentHour) + ", Minutes:" + str(currentMinute))
-  
-  print("Time reached...")
-  #Note TO DO that a specific scheduled time has to be tied to another action, which will alert the users when the task is finished.
+      print("Day Today: " + str(todayDay) + ", Hours: " + str(currentHour) + ", Minutes:" + str(currentMinute))
+    else:
+      #Deletion time... :(
+      asyncio.cancel()
+    print("Time reached...")
+    #Note TO DO that a specific scheduled time has to be tied to another action, which will alert the users when the task is finished.
 
 
   #Obtain user input on the game name in a single string.

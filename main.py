@@ -33,6 +33,10 @@ async def on_message(command):
 async def checkCommand(command, channel, args):
   tempFileName = "etc/temp.txt"
   gamesFile = "etc/games.txt"
+
+  #For now, this class is a singleton, which I don't really fancy...it will be passed down from here to reduce its usage elsewhere (for easy removal).
+  scheduleInstance = processMonitor.getInstance()
+
   #List all the possible commands we are able toi
   if(command == "help"):
     await listPossibleCommands()
@@ -52,9 +56,19 @@ async def checkCommand(command, channel, args):
   #Schedule coop game time for reminder
   #Take in people of group/time to alert
   elif(command == "schedule"):
-    test = processMonitor.getInstance()
-    await scheduleTime(channel, args)
+    await scheduleTime(channel, args, scheduleInstance)
 
+  #List ongoing plans (schedules)
+  elif(command == "listschedule"):
+    await listSchedules()
+  
+  #Remove a schedule from the list
+  elif(command == "removeschedule"):
+    await removeSchedule()
+  
+  #Join schedule
+  elif(command == "joinschedule"):
+    print("TO DO")
   #Incorrect command was entered. Instruct the user to type !help for more information.
   else:
     await channel.send("Incorrect command, try entering !help for a list of commands")

@@ -1,4 +1,8 @@
-#Singleton to keep track of the processes running. For now, only encompasses schedules. Need to keep track if cancellation is needed.
+#TO DO:
+#Add memberList variable to the singleton, so that it can keep track of the members which need to be alerted
+#Add method of displaying participants for a particular schedule
+#Potentially use a dictionary which identifies the scheduled process + the name of the member(s) (there may be multiple members for a given key)
+#Singleton to keep track of the processes running. For now, only encompasses schedules. Need t  o keep track if cancellation is needed.
 class processMonitor:
   #Current Singleton instance
   currentInstance = None
@@ -20,8 +24,8 @@ class processMonitor:
     #Increment the # of running schedules
     self.runningSchedules += 1
 
-    #Add the information on this new process to the informational list
-    self.scheduleInfo += (str(self.runningSchedules) + info)
+    #Add the information on this new process to the informational list, needs work...
+    #self.scheduleInfo += (str(self.runningSchedules) + info)
 
     #Return an identifier to that particular scheduled process so it can watch the singleton to see if an alert was sent out
     identifier = self.runningSchedules
@@ -29,7 +33,11 @@ class processMonitor:
   
   #Alert a particular scheduled process
   def alertSchedule(self, scheduleToAlert):
-    self.alertedSchedule = scheduleToAlert
+    if (self.alertedSchedule == 0):
+      self.alertedSchedule = scheduleToAlert
+      return True
+    else:
+      return False
   
   #If the process identifier matches the alerted schedule, reset the alertedSchedule variable, and return True. Else returns False
   def checkAlerts(self, processIdentifier):

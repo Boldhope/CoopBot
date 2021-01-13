@@ -2,6 +2,7 @@ from commandsupport import *
 import discord
 import enum
 import os
+from monitorProcess import *
 
 #Days Enumeration for scheduler.
 class Days(enum.Enum):
@@ -51,18 +52,31 @@ async def addGame(channel, args, fileName):
     await channel.send(buffer + " has been added to the list.")
     e.close()
   f.close()
-  
+
+#List the schedules available, which were input by discord users.
+async def listSchedules(channel, scheduleInstance):
+  #Lists the schedules currently available.
+  await channel.send(scheduleInstance.giveinfo())
+
+#If there is not already another process waiting to get deleted, then request deletion for a given asynchronous object.
+async def removeSchedule(channel, scheduleInstance, scheduleIdentifier):
+  removalQueueSuccess = scheduleInstance.alertSchedule(scheduleIdentifier)
+  if(removalQueueSuccess == True):
+    await channel.send("Removal Request Success, removal is now pending...")
+  else:
+    await channel.send("Removal not possible at this time. Currently held by another process.")
+
 #Specify in terms of day (Mon, Tue, etc...), time (and AM/PM), and timezone.
 #TO DO: MAKE IT PART OF TASKS, AS IT IS HARD TO KEEP TRACK OF THEM THE WAY THEY ARE CURRENTLY IMPLEMENTED.
-async def scheduleTime(channel, args):
-
+async def scheduleTime(channel, args, scheduleInstance):
+  
   #Place user arguments into day, time, am/pm, and timezone.
     dayOfWeek = args[0]
     timeOfDay = args[1]
     amOrPM = args[2]
     #Note there needs to be method that handles the time zone conversion for pytz. It can only handle UTC right now.
     timeZone = args[3]
-    
+
     #Find out what day it is, for reference. Make this a separate function when done. Returns dayinTermsofNum for use later to find the day.
     dayinTermsOfNum = 0
     for day in Days:
@@ -80,9 +94,12 @@ async def scheduleTime(channel, args):
       actualHours = int(actualTime[0])
     else:
       actualHours = int(actualTime[0]) + 12
-
+    
+    scheduleData = [dayOfWeek, timeOfDay, amOrPM, timeZone]
+    scheduleIdentifier = scheduleInstance.newSchedule(scheduleData)
+    await channel.send("Schedule added...")
     #Create a concurrent task to run, which will be awaited.
-    await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone)
+    await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, scheduleInstance, scheduleIdentifier)
 
 
 #Print from the help.txt, which is preformatted with information
@@ -120,8 +137,6 @@ async def removeGame(channel, args, fileName, tempfileName):
     await channel.send("Successfully Removed " + userInput)
   else:
     await channel.send("Game does not exist...")
-
-
 #Searches a game store for a list of games. Will only return one page at a time. Needs user input to return more than one page... (not sure how to do this at this time)
 #TO DO: USE STEAM STORE PAGE AND TRACK DOWN GAMES ACCORDING TO THEIR TAGS, LIKE "COOP", "ACTION", ETC.
 async def findGames():
