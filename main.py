@@ -60,11 +60,12 @@ async def checkCommand(command, channel, args):
 
   #List ongoing plans (schedules)
   elif(command == "listschedule"):
-    await listSchedules()
+    await listSchedules(channel, scheduleInstance)
   
   #Remove a schedule from the list
   elif(command == "removeschedule"):
-    await removeSchedule()
+
+    await removeSchedule(channel, scheduleInstance, args[0])
   
   #Join schedule
   elif(command == "joinschedule"):

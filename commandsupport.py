@@ -14,13 +14,14 @@ async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone, sche
   currentHour = t1.hour
   currentMinute = t1.minute
 
-  print("Day :" + str(todayDay) + ", Hour: " + str(currentHour) + ", Min: " + str(currentMinute))
+  # print("Day :" + str(todayDay) + ", Hour: " + str(currentHour) + ", Min: " + str(currentMinute))
 
-  print("Specified Day :" + str(dayinTermsOfNum) + ", Specified Hour: " + str(actualHours) + ", Specified Min: " + str(actualMinutes))
+  # print("Specified Day :" + str(dayinTermsOfNum) + ", Specified Hour: " + str(actualHours) + ", Specified Min: " + str(actualMinutes))
+  
   #loop continuously until we reach the hour and minutes we are looking for.
   while((todayDay != dayinTermsOfNum) or (currentHour != actualHours) or (currentMinute != actualMinutes)):
     #Sleep for one second, before checking the current time again.
-    await asyncio.sleep(30)
+    await asyncio.sleep(2)
 
     #Check if discord user wants to eviscerate the life of the poor schedule ;(
     deletionIncoming = scheduleInstance.checkAlerts(scheduleIdentifier)
@@ -32,11 +33,11 @@ async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone, sche
       currentHour = t1.hour
       currentMinute = t1.minute
 
-      print("Day Today: " + str(todayDay) + ", Hours: " + str(currentHour) + ", Minutes:" + str(currentMinute))
     else:
       #Deletion time... :(
+      print("Process Terminated...")
       asyncio.cancel()
-    print("Time reached...")
+  print("Alarm Ended")
     #Note TO DO that a specific scheduled time has to be tied to another action, which will alert the users when the task is finished.
 
 

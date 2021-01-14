@@ -56,7 +56,7 @@ async def addGame(channel, args, fileName):
 #List the schedules available, which were input by discord users.
 async def listSchedules(channel, scheduleInstance):
   #Lists the schedules currently available.
-  await channel.send(scheduleInstance.giveinfo())
+  await channel.send(scheduleInstance.giveInfo())
 
 #If there is not already another process waiting to get deleted, then request deletion for a given asynchronous object.
 async def removeSchedule(channel, scheduleInstance, scheduleIdentifier):
@@ -89,14 +89,13 @@ async def scheduleTime(channel, args, scheduleInstance):
     actualTimeZone = timeZone.lower()
     
     #Figure out the actual hour offset, based on whether we are in PM or AM.
-    timeOfDay = amOrPM.lower()
-    if(timeOfDay == "am"):
+    dayOrNight = amOrPM.lower()
+    if(dayOrNight == "am"):
       actualHours = int(actualTime[0])
     else:
       actualHours = int(actualTime[0]) + 12
     
-    scheduleData = [dayOfWeek, timeOfDay, amOrPM, timeZone]
-    scheduleIdentifier = scheduleInstance.newSchedule(scheduleData)
+    scheduleIdentifier = scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, timeZone)
     await channel.send("Schedule added...")
     #Create a concurrent task to run, which will be awaited.
     await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, scheduleInstance, scheduleIdentifier)
