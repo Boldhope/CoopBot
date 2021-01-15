@@ -4,15 +4,6 @@ import enum
 import os
 from monitorProcess import *
 
-#Days Enumeration for scheduler.
-class Days(enum.Enum):
-  monday = 0
-  tuesday = 1
-  wednesday = 2
-  thursday = 3
-  friday = 4
-  saturday = 5
-  sunday = 6
 
 #Open the games.txt file, and write out the list of coop games available.
 async def listGames(channel, fileName):
@@ -71,34 +62,16 @@ async def removeSchedule(channel, scheduleInstance, scheduleIdentifier):
 async def scheduleTime(channel, args, scheduleInstance):
   
   #Place user arguments into day, time, am/pm, and timezone.
+  #Note there needs to be method that handles the time zone conversion for pytz. It can only handle UTC right now.
     dayOfWeek = args[0]
     timeOfDay = args[1]
     amOrPM = args[2]
-    #Note there needs to be method that handles the time zone conversion for pytz. It can only handle UTC right now.
     timeZone = args[3]
-
-    #Find out what day it is, for reference. Make this a separate function when done. Returns dayinTermsofNum for use later to find the day.
-    dayinTermsOfNum = 0
-    for day in Days:
-      if(day.name == dayOfWeek.lower()):
-        dayinTermsOfNum = day.value
-
-    #Separate timeOfDay into hour and minutes
-    actualTime = timeOfDay.split(':')
-    actualMinutes = int(actualTime[1])
-    actualTimeZone = timeZone.lower()
     
-    #Figure out the actual hour offset, based on whether we are in PM or AM.
-    dayOrNight = amOrPM.lower()
-    if(dayOrNight == "am"):
-      actualHours = int(actualTime[0])
-    else:
-      actualHours = int(actualTime[0]) + 12
-    
-    scheduleIdentifier = scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, timeZone)
-    await channel.send("Schedule added...")
     #Create a concurrent task to run, which will be awaited.
-    await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, scheduleInstance, scheduleIdentifier)
+    scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, timeZone)
+    await channel.send("Schedule added...")
+    # await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, scheduleInstance, scheduleIdentifier)
 
 
 #Print from the help.txt, which is preformatted with information
