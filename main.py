@@ -34,9 +34,10 @@ async def on_message(command):
 
 #Function will check the command to see which one was chosen (only checks simple commands)
 async def checkCommand(discordCommand, commandProperties, args):
-  #Grab the channel for the bot to send a message through
-  channel = commandProperties.channel
-  
+  #Grab the channel & user for the bot to send a message through
+  discordChannel = commandProperties.channel
+  discordUser = commandProperties.author
+
   #File names...
   tempFileName = "etc/temp.txt"
   gamesFile = "etc/games.txt"
@@ -50,29 +51,26 @@ async def checkCommand(discordCommand, commandProperties, args):
 
   #List all coop games which are part of the coop game list. Can be added to.
   elif(discordCommand == "listcoopgames"):
-    await listGames(channel, gamesFile)
+    await listGames(discordChannel, gamesFile)
 
   #Allow user to add a coop game to the list
   elif(discordCommand == "addcoopgame"):
     gameName = getUserInputtedGameName(args)
-    await addGame(channel, gameName, gamesFile)
+    await addGame(discordChannel, gameName, gamesFile)
 
   #Remove a coop game from the list.
   elif (discordCommand == "removecoopgame"):
     gameName = getUserInputtedGameName(args)
-    await removeGame(channel, gameName, gamesFile, tempFileName)
+    await removeGame(discordChannel, gameName, gamesFile, tempFileName)
   
   #Schedule coop game time for reminder
   #Take in people of group/time to alert
   elif(discordCommand == "schedule"):
-    await scheduleTime(channel, args, scheduleInstance)
+    await scheduleTime(discordChannel, args, scheduleInstance)
   
   #Allow a user to join a particular schedule
   elif(discordCommand == "joinschedule"):
-    #Some stuff that helps us find out which user wanted to join
-    #<>
-
-    await addMembertoSchedule(channel,scheduleInstance, args[0])
+    await addMembertoSchedule(discordChannel,scheduleInstance, args[0], discordUser)
 
   #Allow a user to add a particular game to a schedule.
   elif(discordCommand == "addgametoschedule"):
@@ -83,16 +81,16 @@ async def checkCommand(discordCommand, commandProperties, args):
     #get full string of user input for the game name.
     gameName = getUserInputtedGameName(args)
 
-    await addGametoSchedule(channel, scheduleInstance, scheduleID, gameName)
+    await addGametoSchedule(discordChannel, scheduleInstance, scheduleID, gameName)
 
   #List ongoing plans (schedules)
   elif(discordCommand == "listschedule"):
-    await listSchedules(channel, scheduleInstance)
+    await listSchedules(discordChannel, scheduleInstance)
   
   #Remove a schedule from the list
   elif(discordCommand == "removeschedule"):
 
-    await removeSchedule(channel, scheduleInstance, args[0])
+    await removeSchedule(discordChannel, scheduleInstance, args[0])
 
   #Incorrect command was entered. Instruct the user to type !help for more information.
   else:

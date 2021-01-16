@@ -4,12 +4,12 @@
 # Dependencies: asyncio, commandSupport.py, dataStructs.py
 #--------------------------------------------------------
 #Notes: TO DO:
-#       Add method of displaying participants for a particular schedule
 #       Potentially use a dictionary which identifies the scheduled process + the name of          
 #       the member(s) (there may be multiple members for a given key)
 #       Singleton to keep track of the processes running. For now, only encompasses schedules. Need to keep track if cancellation #       is needed.
-#       May want to randomize the key generation, so that we aren't specifically tied down whenever a removal happens.
+#       May want to randomize the key generation, so that we aren't specifically tied down whenever a removal happens. & list this as a schedule ID when listing schedule.
 #       Fix the issue with time zones, when the user enters anything other than utc.
+#       Add participant names to each schedule when listing schedule
 
 from commandSupport import *
 from dataStructs import *
@@ -86,20 +86,25 @@ class processMonitor:
 
     #Allow the user to add a game to the planned date.
     def addGame(self, scheduleIdentifier,gameName):
+      scheduleKey = int(scheduleIdentifier)
+      if (scheduleKey in self.scheduleLookup.keys()):
+        desiredSchedule = self.scheduleLookup.get(int(scheduleIdentifier))
 
-      desiredSchedule = self.scheduleLookup.get(int(scheduleIdentifier))
+        if(desiredSchedule.gameTitle == ""):
+          desiredSchedule.gameTitle = gameName
+          return True
 
-      if(desiredSchedule.gameTitle == ""):
-        desiredSchedule.gameTitle = gameName
-        return True
+        else:
+          return False
 
-      else:
-        return False
+      return False
 
-    #Append the discord user's name to the list of users for a particular scheduled time.
-    def addMember(self, scheduleIdentifier, memberName):
-      desiredSchedule = self.scheduleLookup.get(int(scheduleIdentifier))
-      desiredSchedule.memberList.append(memberName)
+    #Append the discord user/member object to the list of users objects for a particular scheduled time.
+    def addMember(self, scheduleIdentifier, discordUser):
+      scheduleKey = int(scheduleIdentifier)
+      if (scheduleKey in self.scheduleLookup.keys()):
+        desiredSchedule = self.scheduleLookup.get(scheduleKey)
+        desiredSchedule.memberList.append(discordUser)
 
     #Display information for the discord user if they want to view the schedules, or cancel a schedule by chance
     def giveInfo(self):

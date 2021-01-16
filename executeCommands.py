@@ -13,7 +13,7 @@ from monitorProcess import *
 
 
 #Open the games.txt file, and write out the list of coop games available.
-async def listGames(channel, fileName):
+async def listGames(discordChannel, fileName):
   f = open(fileName)
   #Read each line in f for the game list into a buffer, and write out as one message
   buffer = "The list of games are as follows:\n"
@@ -22,10 +22,10 @@ async def listGames(channel, fileName):
     buffer += (line)
   buffer += "```"
   f.close()
-  await channel.send(buffer)
+  await discordChannel.send(buffer)
 
 #Determine whether game exists. If so, let user know it already exists. Else, display confirmation and add to the games.txt file
-async def addGame(channel, gameName, fileName):
+async def addGame(discordChannel, gameName, fileName):
   
   #Declare/Initialize variables for use.
   gameList = []
@@ -38,36 +38,37 @@ async def addGame(channel, gameName, fileName):
 
   #Check if the game name exists already in our games.txt file array, or our gameList.
   if(gameName in gameList):
-    await channel.send("This game is already in the list")
+    await discordChannel.send("This game is already in the list")
   else:
     e = open(fileName, "a")
     e.write("\n" + gameName)
-    await channel.send(gameName + " has been added to the list.")
+    await discordChannel.send(gameName + " has been added to the list.")
     e.close()
   f.close()
 
 #List the schedules available, which were input by discord users.
-async def listSchedules(channel, scheduleInstance):
-  await channel.send(scheduleInstance.giveInfo())
+async def listSchedules(discordChannel, scheduleInstance):
+  await discordChannel.send(scheduleInstance.giveInfo())
 
 #If there is not already another process waiting to get deleted, then request deletion for a given asynchronous object.
-async def removeSchedule(channel, scheduleInstance, scheduleIdentifier):
+async def removeSchedule(discordChannel, scheduleInstance, scheduleIdentifier):
   if(scheduleInstance.removeSchedule(scheduleIdentifier)):
-    await channel.send("Schedule removal success.")
+    await discordChannel.send("Schedule removal success.")
 
 #Add method for the user to add a game to a particular schedule.
-async def addGametoSchedule(channel, scheduleInstance, scheduleIdentifier, gameName):
+async def addGametoSchedule(discordChannel, scheduleInstance, scheduleIdentifier, gameName):
   if(scheduleInstance.addGame(scheduleIdentifier, gameName)):
-    await channel.send("Game added to the schedule.")
+    await discordChannel.send("Game added to the schedule.")
   else:
-    await channel.send("Game already exists as a part of the schedule.")
+    await discordChannel.send("Game already exists as a part of the schedule.")
 
 #Add method for the user to add themselves to a particular schedule.
-async def addMembertoSchedule(channel, scheduleInstance, scheduleIdentifier, memberName):
-  scheduleInstance.addMember(scheduleIdentifier, memberName)
+async def addMembertoSchedule(discordChannel, scheduleInstance, scheduleIdentifier, discordUser):
+  scheduleInstance.addMember(scheduleIdentifier, discordUser)
+  await discordChannel.send(discordUser.display_name + " has successfully joined the schedule.")
 
 #Specify in terms of day (Mon, Tue, etc...), time (and AM/PM), and timezone.
-async def scheduleTime(channel, args, scheduleInstance):
+async def scheduleTime(discordChannel, args, scheduleInstance):
   
   #Place user arguments into day, time, am/pm, and timezone.
   #Note there needs to be method that handles the time zone conversion for pytz. It can only handle UTC right now.
@@ -78,7 +79,7 @@ async def scheduleTime(channel, args, scheduleInstance):
     
     #Create a concurrent task to run, which will be awaited.
     scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, timeZone)
-    await channel.send("Schedule added...")
+    await discordChannel.send("Schedule added...")
     # await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, scheduleInstance, scheduleIdentifier)
 
 
@@ -88,7 +89,7 @@ async def listPossibleCommands():
 
 #Must be able to prevent removal of a specific game, if there are still scheduler tasks running.
 #Take the following format !removecoopgame <GameName>
-async def removeGame(channel, userInput, fileName, tempfileName):
+async def removeGame(discordChannel, userInput, fileName, tempfileName):
 
   removalSuccessful = False
   #Open the respective files for read and write
@@ -112,9 +113,9 @@ async def removeGame(channel, userInput, fileName, tempfileName):
   os.rename(tempfileName, fileName)
   
   if(removalSuccessful):
-    await channel.send("Successfully Removed " + userInput)
+    await discordChannel.send("Successfully Removed " + userInput)
   else:
-    await channel.send("Game does not exist...")
+    await discordChannel.send("Game does not exist...")
     
 #Searches a game store for a list of games. Will only return one page at a time. Needs user input to return more than one page... (not sure how to do this at this time)
 async def findGames():
