@@ -1,7 +1,13 @@
+#--------------------------------------------------------
+# main.py
+# What it does: Some other functions which are used from time to time. To support commands.
+# Dependencies: discord, os, executecommands.py, monitorProcess.py, commandsupport.py
+#--------------------------------------------------------
 import discord 
 import os
-from executecommands import *
+from executeCommands import *
 from monitorProcess import *
+from commandSupport import getUserInputtedGameName
 bot = discord.Client()
 possibleCommands = ["listcoopgames", "addcoopgame", "schedule"]
 possibleCommandDescriptions = ["", "", ""]
@@ -23,53 +29,71 @@ async def on_message(command):
     discordCommand = args[0]
     args.remove(discordCommand)
     
-    #Grab the channel for the bot to send a message through
-    channel = command.channel
-    
     #Check and perform a specific command.
-    await checkCommand(discordCommand, channel, args)
+    await checkCommand(discordCommand, command, args)
 
 #Function will check the command to see which one was chosen (only checks simple commands)
-async def checkCommand(command, channel, args):
+async def checkCommand(discordCommand, commandProperties, args):
+  #Grab the channel for the bot to send a message through
+  channel = commandProperties.channel
+  
+  #File names...
   tempFileName = "etc/temp.txt"
   gamesFile = "etc/games.txt"
-
+    
   #For now, this class is a singleton, which I don't really fancy...it will be passed down from here to reduce its usage elsewhere (for easy removal).
   scheduleInstance = processMonitor.getInstance()
 
   #List all the possible commands we are able toi
-  if(command == "help"):
+  if(discordCommand == "help"):
     await listPossibleCommands()
 
   #List all coop games which are part of the coop game list. Can be added to.
-  elif(command == "listcoopgames"):
+  elif(discordCommand == "listcoopgames"):
     await listGames(channel, gamesFile)
 
   #Allow user to add a coop game to the list
-  elif(command == "addcoopgame"):
-    await addGame(channel, args, gamesFile)
+  elif(discordCommand == "addcoopgame"):
+    gameName = getUserInputtedGameName(args)
+    await addGame(channel, gameName, gamesFile)
 
-  #Remove a coop game from the list. Requires you to have scheduled information removed, if it exists for the game, for it to be removed. TO DO.
-  elif (command == "removecoopgame"):
-    await removeGame(channel, args, gamesFile, tempFileName)
+  #Remove a coop game from the list.
+  elif (discordCommand == "removecoopgame"):
+    gameName = getUserInputtedGameName(args)
+    await removeGame(channel, gameName, gamesFile, tempFileName)
   
   #Schedule coop game time for reminder
   #Take in people of group/time to alert
-  elif(command == "schedule"):
+  elif(discordCommand == "schedule"):
     await scheduleTime(channel, args, scheduleInstance)
+  
+  #Allow a user to join a particular schedule
+  elif(discordCommand == "joinschedule"):
+    #Some stuff that helps us find out which user wanted to join
+    #<>
+
+    await addMembertoSchedule(channel,scheduleInstance, args[0])
+
+  #Allow a user to add a particular game to a schedule.
+  elif(discordCommand == "addgametoschedule"):
+    #Extract schedule ID and remove it from the list of earlier extracted arguments.
+    scheduleID = args[len(args)-1]
+    args.remove(scheduleID)
+    
+    #get full string of user input for the game name.
+    gameName = getUserInputtedGameName(args)
+
+    await addGametoSchedule(channel, scheduleInstance, scheduleID, gameName)
 
   #List ongoing plans (schedules)
-  elif(command == "listschedule"):
+  elif(discordCommand == "listschedule"):
     await listSchedules(channel, scheduleInstance)
   
   #Remove a schedule from the list
-  elif(command == "removeschedule"):
+  elif(discordCommand == "removeschedule"):
 
     await removeSchedule(channel, scheduleInstance, args[0])
-  
-  #Join schedule
-  elif(command == "joinschedule"):
-    print("TO DO")
+
   #Incorrect command was entered. Instruct the user to type !help for more information.
   else:
     await channel.send("Incorrect command, try entering !help for a list of commands")

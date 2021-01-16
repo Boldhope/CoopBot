@@ -1,22 +1,20 @@
-from commandsupport import *
-import enum
+#--------------------------------------------------------
+# monitorProcess.py
+# What it does: A singleton class that keeps track of all of the information/processes running for schedules for the bot.
+# Dependencies: asyncio, commandSupport.py, dataStructs.py
+#--------------------------------------------------------
+#Notes: TO DO:
+#       Add method of displaying participants for a particular schedule
+#       Potentially use a dictionary which identifies the scheduled process + the name of          
+#       the member(s) (there may be multiple members for a given key)
+#       Singleton to keep track of the processes running. For now, only encompasses schedules. Need to keep track if cancellation #       is needed.
+#       May want to randomize the key generation, so that we aren't specifically tied down whenever a removal happens.
+#       Fix the issue with time zones, when the user enters anything other than utc.
+
+from commandSupport import *
+from dataStructs import *
 import asyncio
 
-#Days Enumeration for scheduler.
-class Days(enum.Enum):
-  monday = 0
-  tuesday = 1
-  wednesday = 2
-  thursday = 3
-  friday = 4
-  saturday = 5
-  sunday = 6
-
-#TO DO:
-#Add memberList variable to the singleton, so that it can keep track of the members which need to be alerted
-#Add method of displaying participants for a particular schedule
-#Potentially use a dictionary which identifies the scheduled process + the name of the member(s) (there may be multiple members for a given key)
-#Singleton to keep track of the processes running. For now, only encompasses schedules. Need t  o keep track if cancellation is needed.
 class processMonitor:
     #Current Singleton instance
     currentInstance = None
@@ -65,21 +63,16 @@ class processMonitor:
       
         #Add information to the dictionary
         info = scheduleContainer()
-        info.scheduledDate = "Set for " + dayOfWeek + " at " + timeOfDay + " " + amOrPM + " " + timeZone
+        info.scheduledDate = "set for " + dayOfWeek + " at " + timeOfDay + " " + amOrPM + " " + timeZone
 
         newTask = asyncio.create_task(monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, info))
 
-        #Append the new task to the list of tasks.
-        #self.taskList.append(newTask)
+        #Add the new task to the dictionary of tasks and schedule dictionary
         self.taskList[identifier] = newTask
-        #info.gameTitle = specifiedGame #needs to check if valid game as well on the game list before validating this. TO DO
         self.scheduleLookup[identifier] = info
 
     #Delete a particular task
-    def alertSchedule(self, scheduleToAlert):
-        # print(str(scheduleToAlert))
-        # info = self.scheduleLookup.get(int(scheduleToAlert))
-        # info.gameTitle = "GTFO"
+    def removeSchedule(self, scheduleToAlert):
         loneSchedule = self.taskList.get(int(scheduleToAlert))
         loneSchedule.cancel()
         #Remove all traces of the schedule we wanted to remove >:o
@@ -91,27 +84,22 @@ class processMonitor:
         
         return True
 
-    #If the process identifier matches the alerted schedule, reset the alertedSchedule variable, and return True. Else returns False
-    def checkAlerts(self, processIdentifier):
-        print(str(self.alertedSchedule) + " versus " + str(processIdentifier))
-        if (int(processIdentifier) == int(self.alertedSchedule)):
-            self.alertedSchedule = 0
-            return True
-        else:
-            return False
-
     #Allow the user to add a game to the planned date.
     def addGame(self, scheduleIdentifier,gameName):
-      livingSchedule = self.scheduleLookup.get(int(scheduleIdentifier))
-      if(livingSchedule.gameTitle == ""):
-        livingSchedule.gameTitle = gameName
+
+      desiredSchedule = self.scheduleLookup.get(int(scheduleIdentifier))
+
+      if(desiredSchedule.gameTitle == ""):
+        desiredSchedule.gameTitle = gameName
         return True
+
       else:
         return False
 
-    #TO DO, WILL APPEND TO THE LIST IN THE SCHEDULE CONTAINER CLASS FOR MEMBERS...
+    #Append the discord user's name to the list of users for a particular scheduled time.
     def addMember(self, scheduleIdentifier, memberName):
-      return False
+      desiredSchedule = self.scheduleLookup.get(int(scheduleIdentifier))
+      desiredSchedule.memberList.append(memberName)
 
     #Display information for the discord user if they want to view the schedules, or cancel a schedule by chance
     def giveInfo(self):
@@ -119,7 +107,7 @@ class processMonitor:
         if(bool(self.scheduleLookup)):
           listOfKeys = self.scheduleLookup.keys()
           for i in listOfKeys:
-            strToDisp = strToDisp + str(i) + ") " + self.scheduleLookup[i].scheduledDate + "\n"
+            strToDisp = strToDisp + self.scheduleLookup[i].gameTitle + " " + self.scheduleLookup[i].scheduledDate + "\n"
         else:
           strToDisp = "No schedules currently active."
         return strToDisp

@@ -1,4 +1,11 @@
-from commandsupport import *
+#--------------------------------------------------------
+# executecommands.py
+# What it does: executes the commands for what is called by the user in main.py
+# Dependencies: enum, discord, os, commandsupport.py, monitorProcess.py,
+#Notes:TO DO: MAKE TASKS OUT OF THE SCHEDULED EVENTS. PASS THEM IN HERE, AND CHECK IF THERE ARE ANY FOR A SPECIFIC GAME AND PREVENT   #REMOVAL IF THERE IS. For removeGame
+#TO DO: USE STEAM STORE PAGE AND TRACK DOWN GAMES ACCORDING TO THEIR TAGS, LIKE "COOP", "ACTION", ETC. for findGames
+#--------------------------------------------------------
+from commandSupport import *
 import discord
 import enum
 import os
@@ -17,15 +24,10 @@ async def listGames(channel, fileName):
   f.close()
   await channel.send(buffer)
 
-#Take in args + channel to send to.
-#Grab the list of games from games.txt first
-#Then, create a single string for everything in *args
-#Compare the string to what is available in the games.txt.
-#If not part of that list, send updated list and confirmation that said game was added.
-async def addGame(channel, args, fileName):
+#Determine whether game exists. If so, let user know it already exists. Else, display confirmation and add to the games.txt file
+async def addGame(channel, gameName, fileName):
   
   #Declare/Initialize variables for use.
-  buffer = getUserInputtedGameName(args)
   gameList = []
   #Fill out our game list
   f = open(fileName)
@@ -34,31 +36,37 @@ async def addGame(channel, args, fileName):
     gameList.append(tempstr[0])
   
 
-  #Check if the buffer exists already in our games.txt file array, or our gameList.
-  if(buffer in gameList):
+  #Check if the game name exists already in our games.txt file array, or our gameList.
+  if(gameName in gameList):
     await channel.send("This game is already in the list")
   else:
     e = open(fileName, "a")
-    e.write("\n" + buffer)
-    await channel.send(buffer + " has been added to the list.")
+    e.write("\n" + gameName)
+    await channel.send(gameName + " has been added to the list.")
     e.close()
   f.close()
 
 #List the schedules available, which were input by discord users.
 async def listSchedules(channel, scheduleInstance):
-  #Lists the schedules currently available.
   await channel.send(scheduleInstance.giveInfo())
 
 #If there is not already another process waiting to get deleted, then request deletion for a given asynchronous object.
 async def removeSchedule(channel, scheduleInstance, scheduleIdentifier):
-  removalQueueSuccess = scheduleInstance.alertSchedule(scheduleIdentifier)
-  if(removalQueueSuccess == True):
-    await channel.send("Removal Request Success, removal is now pending...")
+  if(scheduleInstance.removeSchedule(scheduleIdentifier)):
+    await channel.send("Schedule removal success.")
+
+#Add method for the user to add a game to a particular schedule.
+async def addGametoSchedule(channel, scheduleInstance, scheduleIdentifier, gameName):
+  if(scheduleInstance.addGame(scheduleIdentifier, gameName)):
+    await channel.send("Game added to the schedule.")
   else:
-    await channel.send("Removal not possible at this time. Currently held by another process.")
+    await channel.send("Game already exists as a part of the schedule.")
+
+#Add method for the user to add themselves to a particular schedule.
+async def addMembertoSchedule(channel, scheduleInstance, scheduleIdentifier, memberName):
+  scheduleInstance.addMember(scheduleIdentifier, memberName)
 
 #Specify in terms of day (Mon, Tue, etc...), time (and AM/PM), and timezone.
-#TO DO: MAKE IT PART OF TASKS, AS IT IS HARD TO KEEP TRACK OF THEM THE WAY THEY ARE CURRENTLY IMPLEMENTED.
 async def scheduleTime(channel, args, scheduleInstance):
   
   #Place user arguments into day, time, am/pm, and timezone.
@@ -80,10 +88,8 @@ async def listPossibleCommands():
 
 #Must be able to prevent removal of a specific game, if there are still scheduler tasks running.
 #Take the following format !removecoopgame <GameName>
-#TO DO: MAKE TASKS OUT OF THE SCHEDULED EVENTS. PASS THEM IN HERE, AND CHECK IF THERE ARE ANY FOR A SPECIFIC GAME AND PREVENT REMOVAL IF THERE IS.
-async def removeGame(channel, args, fileName, tempfileName):
-  #Get user input
-  userInput = getUserInputtedGameName(args)
+async def removeGame(channel, userInput, fileName, tempfileName):
+
   removalSuccessful = False
   #Open the respective files for read and write
   f = open(fileName)
@@ -109,7 +115,7 @@ async def removeGame(channel, args, fileName, tempfileName):
     await channel.send("Successfully Removed " + userInput)
   else:
     await channel.send("Game does not exist...")
+    
 #Searches a game store for a list of games. Will only return one page at a time. Needs user input to return more than one page... (not sure how to do this at this time)
-#TO DO: USE STEAM STORE PAGE AND TRACK DOWN GAMES ACCORDING TO THEIR TAGS, LIKE "COOP", "ACTION", ETC.
 async def findGames():
   print("Does Nothing")
