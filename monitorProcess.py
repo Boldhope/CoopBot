@@ -6,14 +6,13 @@
 #Notes: TO DO:
 #       Potentially use a dictionary which identifies the scheduled process + the name of          
 #       the member(s) (there may be multiple members for a given key)
-#       Singleton to keep track of the processes running. For now, only encompasses schedules. Need to keep track if cancellation #       is needed.
-#       May want to randomize the key generation, so that we aren't specifically tied down whenever a removal happens. & list this as a schedule ID when listing schedule.
 #       Fix the issue with time zones, when the user enters anything other than utc.
 #       Add participant names to each schedule when listing schedule
 
 from commandSupport import *
 from dataStructs import *
 import asyncio
+import random
 
 class processMonitor:
     #Current Singleton instance
@@ -21,9 +20,6 @@ class processMonitor:
     
     #Keep track of # of running schedules
     runningSchedules = 0
-    
-    #Intended to alert a particular scheduled process on whether it needs to be cancelled
-    alertedSchedule = 0
 
     #Dictionary to keep track of the list of members, the string associated with each scheduled process
     scheduleLookup = {}
@@ -37,11 +33,13 @@ class processMonitor:
         return processMonitor.currentInstance
 
     #Is called each time a new schedule is generated. This will allow it to keep track of all the schedules available. Makes it easier for us to cancel the task if need be
-    def newSchedule(self, dayOfWeek, timeOfDay, amOrPM, timeZone):
+    def newSchedule(self, dayOfWeek, timeOfDay, amOrPM, timeZone, discordChannel):
         #Increment the # of running schedules
         self.runningSchedules += 1
 
-        identifier = self.runningSchedules
+        #Initialize random seed, and initialize our ID to a value between 0 and 255.
+        random.seed()
+        identifier = random.randrange(1, 99)
         #Find out what day it is, for reference. Make this a separate function when done. Returns dayinTermsofNum for use later to find the day.
         dayinTermsOfNum = 0
         for day in Days:
@@ -65,7 +63,7 @@ class processMonitor:
         info = scheduleContainer()
         info.scheduledDate = "set for " + dayOfWeek + " at " + timeOfDay + " " + amOrPM + " " + timeZone
 
-        newTask = asyncio.create_task(monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, info))
+        newTask = asyncio.create_task(monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, info, discordChannel))
 
         #Add the new task to the dictionary of tasks and schedule dictionary
         self.taskList[identifier] = newTask
@@ -90,7 +88,7 @@ class processMonitor:
       if (scheduleKey in self.scheduleLookup.keys()):
         desiredSchedule = self.scheduleLookup.get(int(scheduleIdentifier))
 
-        if(desiredSchedule.gameTitle == ""):
+        if(desiredSchedule.gameTitle == "_"):
           desiredSchedule.gameTitle = gameName
           return True
 
@@ -108,11 +106,13 @@ class processMonitor:
 
     #Display information for the discord user if they want to view the schedules, or cancel a schedule by chance
     def giveInfo(self):
-        strToDisp = ""
+        strToDisp = "```"
         if(bool(self.scheduleLookup)):
           listOfKeys = self.scheduleLookup.keys()
+          strToDisp += "ID " + "| Schedule\n"
           for i in listOfKeys:
-            strToDisp = strToDisp + self.scheduleLookup[i].gameTitle + " " + self.scheduleLookup[i].scheduledDate + "\n"
+            strToDisp += str(i) + "\t" + self.scheduleLookup[i].gameTitle + " " + self.scheduleLookup[i].scheduledDate + "\n"
+          strToDisp += "```"
         else:
           strToDisp = "No schedules currently active."
         return strToDisp

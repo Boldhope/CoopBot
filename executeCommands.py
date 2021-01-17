@@ -60,7 +60,7 @@ async def addGametoSchedule(discordChannel, scheduleInstance, scheduleIdentifier
   if(scheduleInstance.addGame(scheduleIdentifier, gameName)):
     await discordChannel.send("Game added to the schedule.")
   else:
-    await discordChannel.send("Game already exists as a part of the schedule.")
+    await discordChannel.send("Game already exists as a part of the schedule or this schedule does not exist.")
 
 #Add method for the user to add themselves to a particular schedule.
 async def addMembertoSchedule(discordChannel, scheduleInstance, scheduleIdentifier, discordUser):
@@ -78,7 +78,7 @@ async def scheduleTime(discordChannel, args, scheduleInstance):
     timeZone = args[3]
     
     #Create a concurrent task to run, which will be awaited.
-    scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, timeZone)
+    scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, timeZone, discordChannel)
     await discordChannel.send("Schedule added...")
     # await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, scheduleInstance, scheduleIdentifier)
 

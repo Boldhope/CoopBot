@@ -18,6 +18,6 @@ class Days(enum.Enum):
 #Class which is essentially a struct that carries information
 class scheduleContainer:
     scheduledDate = ""
-    gameTitle = ""
+    gameTitle = "_"
     memberList = []
     #processID = 0
