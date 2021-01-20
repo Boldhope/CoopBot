@@ -49,3 +49,12 @@ def getUserInputtedGameName(args):
   buffer = buffer.rstrip()
     
   return buffer
+  
+#Fill out a game list by reading a file. Removes new lines at the end of the line before doing so.
+def getGameList(gameFile):
+  gameList = []
+  f = open(gameFile, "r")
+  for line in f:
+    tempstr = line.split('\n')
+    gameList.append(tempstr[0])
+  return gameList

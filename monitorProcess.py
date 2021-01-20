@@ -8,11 +8,22 @@
 #       the member(s) (there may be multiple members for a given key)
 #       Fix the issue with time zones, when the user enters anything other than utc.
 #       Add participant names to each schedule when listing schedule
-
+# Add assertions/exceptions when things aren't correct.
 from commandSupport import *
 from dataStructs import *
 import asyncio
 import random
+
+#Dictionary that has translations for various timezones.
+timeZoneDict = {
+  "pst": "PST8PDT",
+  "pdt": "PST8PDT",
+  "est": "EST5EDT",
+  "edt": "EST5EDT",
+  "cst": "CST6CDT",
+  "cdt": "CST6CDT",
+  "utc": "utc",
+}
 
 class processMonitor:
     #Current Singleton instance
@@ -33,7 +44,7 @@ class processMonitor:
         return processMonitor.currentInstance
 
     #Is called each time a new schedule is generated. This will allow it to keep track of all the schedules available. Makes it easier for us to cancel the task if need be
-    def newSchedule(self, dayOfWeek, timeOfDay, amOrPM, timeZone, discordChannel):
+    def newSchedule(self, dayOfWeek, timeOfDay, amOrPM, discordChannel, timeZone):
         #Increment the # of running schedules
         self.runningSchedules += 1
 
@@ -63,7 +74,7 @@ class processMonitor:
         info = scheduleContainer()
         info.scheduledDate = "set for " + dayOfWeek + " at " + timeOfDay + " " + amOrPM + " " + timeZone
 
-        newTask = asyncio.create_task(monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, info, discordChannel))
+        newTask = asyncio.create_task(monitorTime(actualHours, actualMinutes, dayinTermsOfNum, timeZoneDict[actualTimeZone], info, discordChannel))
 
         #Add the new task to the dictionary of tasks and schedule dictionary
         self.taskList[identifier] = newTask

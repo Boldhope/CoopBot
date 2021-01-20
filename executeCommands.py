@@ -1,8 +1,8 @@
 #--------------------------------------------------------
 # executecommands.py
-# What it does: Executes the commands for what is called by the user in main.py. Currently, they are encapsulated in generic methods that are defined by the bot dictionary in main.py. 
+# What it does: Executes the commands for what is called by the user in main.py. Currently, they are encapsulated in generic methods that are defined by the bot dictionary in main.py. They are all asynchronous methods...
 # Dependencies: enum, discord, os, commandsupport.py, monitorProcess.py,
-#Notes:TO DO: MAKE TASKS OUT OF THE SCHEDULED EVENTS. PASS THEM IN HERE, AND CHECK IF THERE ARE ANY FOR A SPECIFIC GAME AND PREVENT   #REMOVAL IF THERE IS. For removeGame
+#Notes:TO DO: MAKE TASKS OUT OF THE SCHEDULED EVENTS. PASS THEM IN HERE, AND CHECK IF THERE ARE ANY FOR A SPECIFIC GAME AND PREVENT REMOVAL IF THERE IS. For removeGame
 #TO DO: USE STEAM STORE PAGE AND TRACK DOWN GAMES ACCORDING TO THEIR TAGS, LIKE "COOP", "ACTION", ETC. for findGames
 #--------------------------------------------------------
 from commandSupport import *
@@ -29,13 +29,9 @@ async def addGame(discordChannel, discordUser, scheduleInstance, args, gameFile,
   
   #Declare/Initialize variables for use.
   gameName = getUserInputtedGameName(args)
-  gameList = []
-  #Fill out our game list
-  f = open(gameFile)
-  for line in f:
-    tempstr = line.split('\n')
-    gameList.append(tempstr[0])
   
+  #Get list of available games
+  gameList = getGameList(gameFile)
 
   #Check if the game name exists already in our games.txt file array, or our gameList.
   if(gameName in gameList):
@@ -57,15 +53,19 @@ async def removeSchedule(discordChannel, discordUser, scheduleInstance, args, ga
   if(scheduleInstance.removeSchedule(scheduleIdentifier)):
     await discordChannel.send("Schedule removal success.")
 
-#Add method for the user to add a game to a particular schedule.
+#Add method for the user to add a game to a particular schedule. Check if the game is valid, then add the game to the scheduleInstance.
 async def addGametoSchedule(discordChannel, discordUser, scheduleInstance, args, gameFile, tempFileName):
   scheduleIdentifier = args[len(args)-1]
   args.remove(scheduleIdentifier)
   gameName = getUserInputtedGameName(args)
-  if(scheduleInstance.addGame(scheduleIdentifier, gameName)):
-    await discordChannel.send("Game added to the schedule.")
+  gameList = getGameList(gameFile)
+  if (gameName in gameList):
+    if(scheduleInstance.addGame(scheduleIdentifier, gameName)):
+      await discordChannel.send("Game added to the schedule.")
+    else:
+      await discordChannel.send("Game already exists as a part of the schedule or this schedule does not exist.")
   else:
-    await discordChannel.send("Game already exists as a part of the schedule or this schedule does not exist.")
+    await discordChannel.send("This game does not exist.")
 
 #Add method for the user to add themselves to a particular schedule.
 async def addMembertoSchedule(discordChannel, discordUser, scheduleInstance, args, gameFile, tempFileName):
@@ -84,7 +84,7 @@ async def scheduleTime(discordChannel, discordUser, scheduleInstance, args, game
     timeZone = args[3]
     
     #Create a concurrent task to run, which will be awaited.
-    scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, timeZone, discordChannel)
+    scheduleInstance.newSchedule(dayOfWeek, timeOfDay, amOrPM, discordChannel, timeZone)
     await discordChannel.send("Schedule added...")
     # await monitorTime(actualHours, actualMinutes, dayinTermsOfNum, actualTimeZone, scheduleInstance, scheduleIdentifier)
 
