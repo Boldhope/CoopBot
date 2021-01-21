@@ -135,5 +135,5 @@ async def removeGame(discordChannel, discordUser, scheduleInstance, args, gameFi
     await discordChannel.send("Game does not exist...")
     
 #Searches a game store for a list of games. Will only return one page at a time. Needs user input to return more than one page... (not sure how to do this at this time)
-async def findGames():
+async def findGames(discordChannel, discordUser, scheduleInstance, args, gamesFile, tempFileName):
   print("Does Nothing")

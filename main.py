@@ -21,6 +21,7 @@ botDict = {
   "addgametoschedule": addGametoSchedule,
   "listschedule": listSchedules,
   "removeschedule": removeSchedule,
+  "findgames": findGames,
 }
 
 @bot.event

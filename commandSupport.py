@@ -2,7 +2,6 @@
 # commandSupport.py
 # What it does: Some other functions which are used from time to time. To support commands.
 # Dependencies: asyncio, datetime, pytz, dataStructs
-# Notes: TO DO that a specific scheduled time has to be tied to another action, which will alert the users when the task is finished.
 #--------------------------------------------------------
 import asyncio
 import datetime
