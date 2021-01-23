@@ -7,6 +7,7 @@ import asyncio
 import datetime
 import pytz
 from dataStructs import scheduleContainer
+from bs4 import BeautifulSoup, SoupStrainer
 
 #Will occasionally sleep and let other processes take over, while it tries to wait for the designated time. May have problems that should be looked at later.
 async def monitorTime(actualHours, actualMinutes,dayinTermsOfNum, timeZone, scheduleInfo, discordChannel):
@@ -57,3 +58,13 @@ def getGameList(gameFile):
     tempstr = line.split('\n')
     gameList.append(tempstr[0])
   return gameList
+
+#Get the content of the result from that webpage request, and devy it up so we can find the game items.
+def storeInfo(result):
+  f = open("etc/dump.txt", "w")
+  src = result.content
+  soup = BeautifulSoup(src, "html.parser", parse_only = SoupStrainer(['div', 'a']))
+  f.write(soup.prettify())
+  for item_name in soup.find_all(class_="tab_item_name"):
+    f.write(item_name.get_text())
+  f.close()

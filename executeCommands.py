@@ -5,12 +5,13 @@
 #Notes:TO DO: MAKE TASKS OUT OF THE SCHEDULED EVENTS. PASS THEM IN HERE, AND CHECK IF THERE ARE ANY FOR A SPECIFIC GAME AND PREVENT REMOVAL IF THERE IS. For removeGame
 #TO DO: USE STEAM STORE PAGE AND TRACK DOWN GAMES ACCORDING TO THEIR TAGS, LIKE "COOP", "ACTION", ETC. for findGames
 #--------------------------------------------------------
-from commandSupport import *
 import discord
 import enum
 import os
 from monitorProcess import *
-
+from commandSupport import *
+from bs4 import BeautifulSoup, SoupStrainer
+import requests
 
 #Open the games.txt file, and write out the list of coop games available.
 async def listGames(discordChannel, discordUser, scheduleInstance, args, gameFile, tempFileName):
@@ -135,5 +136,17 @@ async def removeGame(discordChannel, discordUser, scheduleInstance, args, gameFi
     await discordChannel.send("Game does not exist...")
     
 #Searches a game store for a list of games. Will only return one page at a time. Needs user input to return more than one page... (not sure how to do this at this time)
+#Should make the user choose between different tags, and then go from there. Might want to make this a separate command, by using the command subclass rather than the regular client to truly use this. Would be nice if it can display all the games from a page, then ask the user if they want to continue looking for more games.
+#Narrow the query down to the page we want to look at, say: https://store.steampowered.com/tags/en/Co-op/#p=0&tab=TopSellers
 async def findGames(discordChannel, discordUser, scheduleInstance, args, gamesFile, tempFileName):
-  print("Does Nothing")
+  basePage = "https://store.steampowered.com/"
+  pageTag = "tags/en/" + "Co-op" + "/"
+  pageToGoTo = basePage + pageTag
+  #Request the Webpage information, and store the information in soup object
+  result = requests.get(pageToGoTo)
+  soup = storeInfo(result)
+
+
+  
+
+
