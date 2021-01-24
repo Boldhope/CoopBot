@@ -60,11 +60,21 @@ def getGameList(gameFile):
   return gameList
 
 #Get the content of the result from that webpage request, and devy it up so we can find the game items.
-def storeInfo(result):
+def returnInfo(result, currentTab):
   f = open("etc/dump.txt", "w")
   src = result.content
   soup = BeautifulSoup(src, "html.parser", parse_only = SoupStrainer(['div', 'a']))
-  f.write(soup.prettify())
-  for item_name in soup.find_all(class_="tab_item_name"):
-    f.write(item_name.get_text())
+  f.write(soup.prettify() + "\n\n\n\n\n")
+
+  #Find the new release tab's content, and find all games, separated in pieces using the for loop.
+  steamGameList = []
+  tabStr = "tab_content_" + currentTab
+  tabContent = soup.find(id = tabStr)
+  for gameItem in tabContent.find_all(class_= "tab_item_content"):
+    gameName = gameItem.find(class_ ="tab_item_name")
+    gameNameStr = gameName.get_text()
+    f.write(gameNameStr)
+    steamGameList.append(gameNameStr)
+    #f.write(item_name.prettify() + "END\n")
   f.close()
+  return steamGameList

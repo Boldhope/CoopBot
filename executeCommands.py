@@ -138,13 +138,22 @@ async def removeGame(discordChannel, discordUser, scheduleInstance, args, gameFi
 #Searches a game store for a list of games. Will only return one page at a time. Needs user input to return more than one page... (not sure how to do this at this time)
 #Should make the user choose between different tags, and then go from there. Might want to make this a separate command, by using the command subclass rather than the regular client to truly use this. Would be nice if it can display all the games from a page, then ask the user if they want to continue looking for more games.
 #Narrow the query down to the page we want to look at, say: https://store.steampowered.com/tags/en/Co-op/#p=0&tab=TopSellers
+#Note issue where the page link for each page is correct, but it does not seem to pull the correct information
 async def findGames(discordChannel, discordUser, scheduleInstance, args, gamesFile, tempFileName):
   basePage = "https://store.steampowered.com/"
   pageTag = "tags/en/" + "Co-op" + "/"
-  pageToGoTo = basePage + pageTag
+  currentPage = 0
+  currentTab = "NewReleases"
+  pageToGoTo = basePage + pageTag # + "#p=" + str(currentPage) + "&tab=" + currentTab
+  numPages = range(5)
+  steamGameList = []
   #Request the Webpage information, and store the information in soup object
-  result = requests.get(pageToGoTo)
-  soup = storeInfo(result)
+  for i in numPages:
+    pageToGoTo = basePage + pageTag  + "#p=" + str(i) + "&tab=" + currentTab  
+    print(pageToGoTo)
+    result = requests.get(pageToGoTo)
+    steamGameList = returnInfo(result, currentTab)
+  print(steamGameList)
 
 
   
